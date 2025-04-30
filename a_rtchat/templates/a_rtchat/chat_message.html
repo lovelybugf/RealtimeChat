@@ -1,0 +1,29 @@
+{% if message.author == user %}
+<div class="flex items-start justify-end space-x-3">
+    <div class="message-container flex flex-col items-end">
+        <div class="message-wrapper">
+            <div class="message-time message-time-left">{{ message.created|time:"H:i" }}</div>
+            <div class="mt-1 bg-blue-500 rounded-lg p-3 message-bubble">
+                <p class="text-white"><span>{{ message.body }}</span></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="flex items-start space-x-3">
+    <div class="flex items-start space-x-3">
+        <a href="{% url 'profile' message.author.username %}" class="flex items-center space-x-2">
+            <img src="{{ message.author.profile.avatar }}" alt="Russell" class="w-8 h-8 rounded-full shrink-0">
+            <p class="text-sm font-medium text-gray-900 hover:text-blue-500"><span>{{ message.author.name }}</span></p>
+        </a>
+    </div>
+    <div class="message-container">
+        <div class="message-wrapper message-wrapper-sent">
+            <div class="message-time message-time-right">{{ message.created|time:"H:i" }}</div>
+            <div class="mt-1 bg-gray-100 rounded-lg p-3 message-bubble">
+                <p class="text-gray-900"><span>{{ message.body }}</span></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}

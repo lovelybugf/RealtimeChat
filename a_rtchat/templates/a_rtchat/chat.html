@@ -1,0 +1,175 @@
+{% extends 'layouts/blank.html' %}
+
+{% block content %}
+<style>
+    /* Custom Scrollbar */
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #d1d5db;
+        border-radius: 3px;
+    }
+    
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #9ca3af;
+    }
+
+    .custom-scrollbar {
+        scrollbar-width: thin;
+        scrollbar-color: #d1d5db transparent;
+    }
+
+    /* Hide scrollbar when not needed */
+    .custom-scrollbar {
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    /* Only show scrollbar on hover and when content overflows */
+    .custom-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .custom-scrollbar:hover::-webkit-scrollbar {
+        display: block;
+    }
+
+    /* Ensure content takes full height */
+    .flex-1 {
+        min-height: 0;
+    }
+
+    /* Message styles */
+    .message-container {
+        max-width: 30%;
+        width: fit-content;
+    }
+
+    .message-container span {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        white-space: normal;
+    }
+
+    .message-bubble {
+        width: fit-content;
+    }
+
+    /* Timestamp styles */
+    .message-time {
+        font-size: 0.75rem;
+        color: #6B7280;
+        margin-top: 2px;
+        min-width: 45px;
+    }
+
+    .message-time-left {
+        text-align: left;
+    }
+
+    .message-time-right {
+        text-align: right;
+    }
+
+    .message-wrapper {
+        display: flex;
+        gap: 8px;
+        align-items: flex-end;
+    }
+
+    .message-wrapper-sent {
+        flex-direction: row-reverse;
+    }
+
+    .rotate-90-right {
+        transform: rotate(90deg);
+    }
+    #chat_message_form input[type="text"] {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.5rem;
+        outline: none;
+        transition: border-color 0.2s;
+        background-color: white;
+    }
+
+    #chat_message_form input[type="text"]:focus {
+        border-color: #3b82f6;
+    }
+</style>
+
+<div class="flex h-[850px] overflow-hidden bg-white">
+    <!-- Left Sidebar -->
+    {% include 'a_rtchat/contact.html' %}
+
+    <!-- Main Chat Area -->
+    <div class="flex-1 flex flex-col">
+        <!-- Chat Header -->
+        <div class="h-16 px-6 flex items-center justify-between border-b border-gray-200 bg-white">
+            <div class="flex items-center space-x-4">
+                <p class="text-lg font-medium text-gray-900"><span>To: Emily Russell</span></p>
+            </div>
+        </div>
+
+        <!-- Messages Area -->
+        <div class="flex-1 overflow-y-auto p-6 custom-scrollbar" id="chat_container">
+            <div class="space-y-6" id="chat_messages">
+                {% for message in chat_messages reversed %}
+                {% include 'a_rtchat/chat_message.html' %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="px-6 py-4 border-t border-gray-200 bg-white sticky bottom-0 z-10 p-2 bg-gray-800">
+            <div class="flex items-center gap-4">
+                <form id="chat_message_form" class="flex-1"
+                    hx-ext="ws"
+                    ws-connect="/ws/chatroom/public-chat"
+                    ws-send="true"
+                    _="on htmx:wsAfterSend reset() me">    
+                    {% csrf_token %}
+                    {{form}}
+                </form>
+                <!-- GameButton -->
+                <button type="button" 
+                    class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200 flex items-center gap-2"
+                    onclick="startGame()">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                        <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+                    </svg>
+                    Play Game
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
+{% block javascript %}
+<script>
+
+    function scrollToBottom(time=0) {
+        setTimeout(function() {
+            const container = document.getElementById('chat_container');
+            container.scrollTop = container.scrollHeight;
+        }, time);
+    }
+    scrollToBottom()
+
+    function startGame() {
+        // Thêm logic game ở đây
+        alert('Game coming soon!');
+    }
+
+</script>
+{% endblock %}
