@@ -1,4 +1,4 @@
-{% extends 'layouts/blank.html' %}
+{% extends 'layouts/box1.html' %}
 
 {% block content %}
 <style>
@@ -66,7 +66,8 @@
         font-size: 0.75rem;
         color: #6B7280;
         margin-top: 2px;
-        min-width: 45px;
+        min-width: 120px;
+        white-space: nowrap;
     }
 
     .message-time-left {
@@ -92,7 +93,8 @@
     }
     #chat_message_form input[type="text"] {
         width: 100%;
-        padding: 0.75rem 1rem;
+        padding: 0.75rem 1.25rem;
+        font-size: 1.125rem;
         border: 1px solid #e5e7eb;
         border-radius: 0.5rem;
         outline: none;
@@ -105,17 +107,49 @@
     }
 </style>
 
-<div class="flex h-[850px] overflow-hidden bg-white">
+<div class="flex h-[725px] overflow-hidden bg-white">
     <!-- Left Sidebar -->
-    {% include 'a_rtchat/contact.html' %}
+    <div id="left_sidebar" class="w-[280px] flex flex-col border-r border-gray-200">
+        <!-- Contact List -->
+        <div class="flex-1 overflow-y-auto custom-scrollbar" id="contact_list">
+            <div class="h-auto max-h-full overflow-y-auto custom-scrollbar">
+                {% include 'a_rtchat/contact.html' %}
+            </div>
+        </div>
+    </div>
 
     <!-- Main Chat Area -->
     <div class="flex-1 flex flex-col">
         <!-- Chat Header -->
-        <div class="h-16 px-6 flex items-center justify-between border-b border-gray-200 bg-white">
+        <div id="chat-header" class="h-16 px-4 flex items-center justify-between border-b border-gray-200 bg-white">
             <div class="flex items-center space-x-4">
-                <p class="text-lg font-medium text-gray-900"><span>To: Emily Russell</span></p>
+                <p class="text-lg font-medium text-gray-900 flex items-center">
+                    {% if other_user %}
+                    <div class="flex items-center gap-3">
+
+                        <a href="{% url 'profile' other_user.username %}">
+                            <img src="{{ other_user.profile.avatar }}" alt="{{ other_user.profile.name }}" 
+                                class="w-14 h-14 rounded-full object-cover border-2 border-gray-200">
+                        </a>
+                        <span id="chat-title" class="inline-flex items-center font-bold">{{other_user.profile.name}}</span>
+                    </div>
+                    {% else %}
+                    {% if chat_group.groupchat_name %}
+                        <span id="chat-title" class="inline-flex items-center font-bold">{{chat_group.groupchat_name}}</span>
+                    {% endif %}
+                    {%endif%}
+                </p>
             </div>
+            {% if user == chat_group.admin %}
+            <a href="{% url 'manage-group' chat_group.group_name %}">
+                <button class="p-2 text-white-500 hover:text-white-700 rounded-lg hover:bg-white-100" title="Manage Group">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                </button>
+            </a>
+            {% endif %}
         </div>
 
         <!-- Messages Area -->
@@ -128,28 +162,54 @@
         </div>
 
         <!-- Input Area -->
-        <div class="px-6 py-4 border-t border-gray-200 bg-white sticky bottom-0 z-10 p-2 bg-gray-800">
+        <div class="px-6 py-4 border-t border-gray-200 bg-white sticky bottom-0 z-10">
             <div class="flex items-center gap-4">
-                <form id="chat_message_form" class="flex-1"
-                    hx-ext="ws"
-                    ws-connect="/ws/chatroom/public-chat"
-                    ws-send="true"
-                    _="on htmx:wsAfterSend reset() me">    
-                    {% csrf_token %}
-                    {{form}}
-                </form>
                 <!-- GameButton -->
                 <button type="button" 
                     class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200 flex items-center gap-2"
-                    onclick="startGame()">
+                    onclick="showGameModal()">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                         <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
                         <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
                     </svg>
                     Play Game
                 </button>
+                <form id="chat_message_form" class="flex-1"
+                    hx-ext="ws"
+                    ws-connect="/ws/chatroom/{{chatroom_name}}"
+                    ws-send="true"
+                    _="on htmx:wsAfterSend reset() me">    
+                    {% csrf_token %}
+                    {{form}}
+                </form>
+                <form method="post" enctype="multipart/form-data" class="flex items-center gap-2"
+                    hx-post="{% url 'chat-file-upload' chat_group.group_name %}"
+                    hx-target="#chat_messages"
+                    hx-swap="beforeend" 
+                    _="on htmx:beforeSend reset() me">
+                    {% csrf_token %}
+                    <label for="file" class="cursor-pointer flex items-center gap-1 md:gap-2 bg-gray-100 hover:bg-gray-200 px-2 py-1 md:px-4 md:py-2 rounded border border-gray-300 text-gray-700 text-xs md:text-base">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5-5m0 0l5 5m-5-5v12" />
+                        </svg>
+                        <input type="file" name="file" id="file" class="hidden">
+                    </label>
+                    <button type="submit" class="w-16 md:w-24 px-2 py-1 md:px-4 md:py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors text-xs md:text-base">Send</button>
+                </form>
+                
             </div>
         </div>
+    </div>
+</div>
+<!-- Game Selection Modal -->
+<div id="gameModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeGameModal()">×</span>
+        <h3>Chọn Trò Chơi</h3>
+        <ul>
+            <li onclick="startGame('snake')">Rắn Săn Mồi</li>
+            <li onclick="startGame('xo')">Cờ Caro</li>
+        </ul>
     </div>
 </div>
 
@@ -166,10 +226,41 @@
     }
     scrollToBottom()
 
-    function startGame() {
-        // Thêm logic game ở đây
-        alert('Game coming soon!');
+    function showGameModal() {
+        document.getElementById('gameModal').style.display = 'flex';
     }
 
+    function closeGameModal() {
+        document.getElementById('gameModal').style.display = 'none';
+    }
+    function startGame(gameType) {
+        closeGameModal();
+        const endpoint = gameType === 'snake' ? '/start-game/' : '/start-xo/'; 
+        fetch(endpoint, {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": "{{ csrf_token }}",
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ game_type: gameType })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Phản hồi mạng không ổn: ' + response.statusText);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.status === 'success') {
+                const gameName = gameType === 'snake' ? 'Rắn Săn Mồi' : 'XO';
+                alert(`Trò chơi ${gameName} đã bắt đầu!` + (data.room_id ? ` Room ID: ${data.room_id}, Bạn là: ${data.player}` : ''));
+            } else {
+                alert("Lỗi: " + (data.message || 'Không xác định'));
+            }
+        })
+        .catch(error => {
+            alert("Đã xảy ra lỗi: " + error.message);
+        });
+    }
 </script>
 {% endblock %}

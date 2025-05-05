@@ -2,10 +2,30 @@
 <div class="flex items-start justify-end space-x-3">
     <div class="message-container flex flex-col items-end">
         <div class="message-wrapper">
-            <div class="message-time message-time-left">{{ message.created|time:"H:i" }}</div>
-            <div class="mt-1 bg-blue-500 rounded-lg p-3 message-bubble">
-                <p class="text-white"><span>{{ message.body }}</span></p>
-            </div>
+                {% if message.file %}
+                    {% if message.is_image %}
+                    <div class="mt-1 bg-blue-500 rounded-lg p-3 message-bubble">
+                        <img class="max-w-96 min-w-16" src="{{ message.file.url }}" />
+                    </div>
+                    {% else %}
+                    <div class="mt-1 bg-blue-500 rounded-lg p-3 message-bubble text-white">
+                        &#x1F4CE; <a class="cursor-pointer italic hover:underline text-white" href="{{ message.file.url }}" download>{{ message.file.name }}</a>
+                    </div>
+                    {% endif %}
+                {% else %}
+                    <div class="mt-1 bg-blue-500 rounded-lg p-3 message-bubble">
+                        <p class="text-white"><span>{{ message.body }}</span></p>
+                    </div>
+                {% endif %}
+        </div>
+        <div class="message-time message-time-right">
+            {% if message.created|date:"Y-m-d" == now|date:"Y-m-d" %}
+                Today {{ message.created|time:"H:i" }}
+            {% elif message.created|date:"Y-m-d" == yesterday|date:"Y-m-d" %}
+                Yesterday {{ message.created|time:"H:i" }}
+            {% else %}
+                {{ message.created|date:"d/m/Y" }} {{ message.created|time:"H:i" }}
+            {% endif %}
         </div>
     </div>
 </div>
@@ -17,12 +37,28 @@
             <p class="text-sm font-medium text-gray-900 hover:text-blue-500"><span>{{ message.author.name }}</span></p>
         </a>
     </div>
-    <div class="message-container">
+    <div class="message-container flex flex-col items-start">
         <div class="message-wrapper message-wrapper-sent">
-            <div class="message-time message-time-right">{{ message.created|time:"H:i" }}</div>
             <div class="mt-1 bg-gray-100 rounded-lg p-3 message-bubble">
-                <p class="text-gray-900"><span>{{ message.body }}</span></p>
+                {% if message.file %}
+                    {% if message.is_image %}
+                        <img class="max-w-96 min-w-16" src="{{ message.file.url }}" />
+                    {% else %}
+                        &#x1F4CE; <a class="cursor-pointer italic hover:underline" href="{{ message.file.url }}" download>Tải file</a>
+                    {% endif %}
+                {% else %}
+                    <p class="text-gray-900"><span>{{ message.body }}</span></p>
+                {% endif %}
             </div>
+        </div>
+        <div class="message-time message-time-left">
+            {% if message.created|date:"Y-m-d" == now|date:"Y-m-d" %}
+                Today {{ message.created|time:"H:i" }}
+            {% elif message.created|date:"Y-m-d" == yesterday|date:"Y-m-d" %}
+                Yesterday {{ message.created|time:"H:i" }}
+            {% else %}
+                {{ message.created|date:"d/m/Y" }} {{ message.created|time:"H:i" }}
+            {% endif %}
         </div>
     </div>
 </div>

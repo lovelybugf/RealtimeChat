@@ -1,25 +1,45 @@
-<div id="left_sidebar" class="w-[280px] flex flex-col border-r border-gray-200">
-    <!-- Search Bar -->
-    <div class="p-4 border-b border-gray-200">
-        <div class="relative">
-            <input type="text" placeholder="Search" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500">
-            <svg class="absolute left-3 top-2.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-            </svg>
-        </div>
-    </div>
-
-    <!-- Contact List -->
-    <div class="flex-1 overflow-y-auto custom-scrollbar">
-        <div class="h-auto max-h-full overflow-y-auto custom-scrollbar">
-            <!-- Contact Items -->
-            <div class="px-4 py-3 hover:bg-gray-100 cursor-pointer flex items-center space-x-3">
-                <img src="https://picsum.photos/id/1/200" alt="Steve" class="w-10 h-10 rounded-full">
-                <div>
-                    <p class="font-medium text-gray-900"><span>Steve Bangalter</span></p>
-                    <p class="text-sm text-gray-500"><span>15/02/2019</span></p>
+<!-- Contact Items -->
+    {% for chatroom in chat_groups %}
+    {% if chatroom.is_private %}
+        {% for member in chatroom.members.all%}
+            {% if member != user %}
+            <a href="{% url 'chatroom' chatroom.group_name %}" class="block hover:bg-gray-100">
+                <div class="px-4 py-3 cursor-pointer flex items-center space-x-3">
+                    <img src="{{ member.profile.avatar }}" alt="{{ member.profile.name }}" class="w-14 h-14 rounded-full">
+                    <div class="flex-1">
+                        <p class="font-medium text-gray-900">{{ member.profile.name }}</p>
+                        {% with last_message=chatroom.chat_messages.first %}
+                        {% if last_message %}
+                        <p class="text-sm text-gray-500 truncate">
+                            {% if last_message.author == user %}
+                            You: 
+                            {% else %}
+                            {{ last_message.author.profile.name }}: 
+                            {% endif %}
+                            {{ last_message.body }}
+                        </p>
+                        {% endif %}
+                        {% endwith %}
+                    </div>
+                </div>
+            </a>
+            {% endif %}
+        {% endfor %}
+    {% else %}
+        <a href="{% url 'chatroom' chatroom.group_name %}" class="block hover:bg-gray-100">
+            <div class="px-4 py-3 cursor-pointer flex items-center space-x-3">
+                <div class="w-14 h-14 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-lg">
+                    {{ chatroom.groupchat_name|first|upper }}
+                </div>
+                <div class="flex-1">
+                    <p class="font-medium text-gray-900">{{ chatroom.groupchat_name }}</p>
+                    {% with last_message=chatroom.chat_messages.first %}
+                    {% if last_message %}
+                    <p class="text-sm text-gray-500 truncate">{{ last_message.body }}</p>
+                    {% endif %}
+                    {% endwith %}
                 </div>
             </div>
-        </div>
-    </div>
-</div>
+        </a>
+    {% endif %}
+{% endfor %}

@@ -4,6 +4,9 @@ from .models import *
 import json
 from asgiref.sync import async_to_sync
 from django.template.loader import render_to_string
+from django.db.models import Max
+from datetime import timedelta
+from django.utils import timezone
 
 class ChatroomConsumer(WebsocketConsumer):
     def connect(self):
@@ -14,13 +17,13 @@ class ChatroomConsumer(WebsocketConsumer):
         async_to_sync(self.channel_layer.group_add)(
             self.chatroom_name, self.channel_name
         )
-
-        # if self.user not in self.chatroom.users_online.all():
-        #     self.chatroom.users_online.add(self.user)
-        #     self.update_online_count()
-        
         self.accept()
-    
+        
+    def disconnect(self, close_code):
+        async_to_sync(self.channel_layer.group_discard)(
+            self.chatroom_name, self.channel_name
+        )
+        
     def receive(self, text_data):
         text_data_json = json.loads(text_data)
         body = text_data_json['body']
@@ -37,16 +40,38 @@ class ChatroomConsumer(WebsocketConsumer):
         async_to_sync(self.channel_layer.group_send)(
             self.chatroom_name, event
         )
-    
+        
     def message_handler(self, event):
         message_id = event['message_id']
         message = GroupMessage.objects.get(id=message_id)
+        now = timezone.now()
+        yesterday = now - timedelta(days=1)
         context = {
             'message': message,
             'user': self.user,
+            'chat_group': self.chatroom,
+            'now': now,
+            'yesterday': yesterday
         }
-        html = render_to_string("a_rtchat/partials/chat_message_p.html", context = context)
-        self.send(text_data = html)
-
-
-
+        chat_groups = self.user.chat_groups.annotate(
+            latest_message_time=Max('chat_messages__created')
+        ).order_by('-latest_message_time')
+        
+        # Render chat message
+        html = render_to_string("a_rtchat/partials/chat_message_p.html", context=context)
+        self.send(text_data=html)
+        
+        # Render contact list
+        html_contact = render_to_string("a_rtchat/partials/contact_p.html", 
+            context={
+                'chat_groups': chat_groups,
+                'user': self.user,
+                'now': now,
+                'yesterday': yesterday
+            })
+        self.send(text_data=html_contact)
+        
+        # Render notification if the message is not from the current user
+        if message.author != self.user:
+            html_notification = render_to_string("a_rtchat/partials/notification_p.html", context=context)
+            self.send(text_data=html_notification)
