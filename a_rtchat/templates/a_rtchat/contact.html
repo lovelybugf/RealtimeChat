@@ -35,8 +35,15 @@
                     <p class="font-medium text-gray-900">{{ chatroom.groupchat_name }}</p>
                     {% with last_message=chatroom.chat_messages.first %}
                     {% if last_message %}
-                    <p class="text-sm text-gray-500 truncate">{{ last_message.body }}</p>
-                    {% endif %}
+                        <p class="text-sm text-gray-500 truncate">
+                            {% if last_message.author == user %}
+                            You: 
+                            {% else %}
+                            {{ last_message.author.profile.name }}: 
+                            {% endif %}
+                            {{ last_message.body }}
+                        </p>
+                        {% endif %}
                     {% endwith %}
                 </div>
             </div>

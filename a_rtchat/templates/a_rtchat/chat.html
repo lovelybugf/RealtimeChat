@@ -2,6 +2,58 @@
 
 {% block content %}
 <style>
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 50;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.5);
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal-content {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        width: 300px;
+        text-align: center;
+    }
+
+    .modal-content h3 {
+        margin-bottom: 15px;
+        font-size: 1.25rem;
+    }
+
+    .modal-content ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    .modal-content li {
+        cursor: pointer;
+        margin: 10px 0;
+        padding: 10px;
+        border-radius: 5px;
+        background-color: #f3f4f6;
+        transition: background-color 0.2s;
+    }
+
+    .modal-content li:hover {
+        background-color: #e5e7eb;
+    }
+
+    .close {
+        float: right;
+        font-size: 1.5rem;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    
     /* Custom Scrollbar */
     .custom-scrollbar::-webkit-scrollbar {
         width: 6px;
@@ -110,6 +162,26 @@
 <div class="flex h-[725px] overflow-hidden bg-white">
     <!-- Left Sidebar -->
     <div id="left_sidebar" class="w-[280px] flex flex-col border-r border-gray-200">
+        <!-- Search Bar -->
+        <div class="p-4 border-b border-gray-200 relative">
+            <div class="relative">
+                <input type="text" id="search_contacts" 
+                    class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                    placeholder="Tìm kiếm..."
+                    hx-get="{% url 'search-users' %}"
+                    hx-trigger="keyup changed delay:500ms"
+                    hx-target="#search_results"
+                    name="q">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+            </div>
+            <!-- Search Results Hoverlist -->
+            <div id="search_results" class="absolute left-0 right-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 max-h-96 overflow-y-auto z-50 hidden">
+            </div>
+        </div>
         <!-- Contact List -->
         <div class="flex-1 overflow-y-auto custom-scrollbar" id="contact_list">
             <div class="h-auto max-h-full overflow-y-auto custom-scrollbar">
@@ -201,6 +273,7 @@
         </div>
     </div>
 </div>
+
 <!-- Game Selection Modal -->
 <div id="gameModal" class="modal">
     <div class="modal-content">
@@ -217,7 +290,6 @@
 {% endblock %}
 {% block javascript %}
 <script>
-
     function scrollToBottom(time=0) {
         setTimeout(function() {
             const container = document.getElementById('chat_container');
@@ -233,6 +305,25 @@
     function closeGameModal() {
         document.getElementById('gameModal').style.display = 'none';
     }
+
+    // Search input handling
+    const searchInput = document.getElementById('search_contacts');
+    const searchResults = document.getElementById('search_results');
+
+    searchInput.addEventListener('focus', () => {
+        searchResults.classList.remove('hidden');
+    });
+
+    searchInput.addEventListener('blur', () => {
+        setTimeout(() => {
+            searchResults.classList.add('hidden');
+        }, 200);
+    });
+
+    searchResults.addEventListener('mousedown', (e) => {
+        e.preventDefault(); // Prevent input blur when clicking results
+    });
+
     function startGame(gameType) {
         closeGameModal();
         const endpoint = gameType === 'snake' ? '/start-game/' : '/start-xo/'; 

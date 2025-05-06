@@ -79,21 +79,18 @@ def chat_view(request, chatroom_name = "public-chat"):
 def get_or_create_chatroom(request, username):
     if request.user.username == username:
         return redirect('home')
-    other_user = User.objects.get(username=username)
-    my_chatroom = request.user.chat_groups.filter(is_private=True)
-    chatroom = None
-    if my_chatroom.exists():
-        for chatroom in my_chatroom:
-            if other_user in chatroom.members.all():
-                chatroom = chatroom
-                break
-            else:
-                chatroom = ChatGroup.objects.create(is_private=True)
-                chatroom.members.add(request.user, other_user)
-    else:
+    
+    other_user = User.objects.get(username = username)
+    chatroom = ChatGroup.objects.filter(
+        is_private=True,
+        members=request.user
+    ).filter(
+        members=other_user
+    ).first()
+    if not chatroom:
         chatroom = ChatGroup.objects.create(is_private=True)
         chatroom.members.add(request.user, other_user)
-
+        
     return redirect('chatroom', chatroom.group_name)
 
 @login_required
@@ -230,3 +227,15 @@ def start_XO(request):
             }, status=500)
 
     return JsonResponse({"status": "error", "message": "Yêu cầu không hợp lệ"}, status=400)
+
+@login_required
+def search_users(request):
+    query = request.GET.get('q', '')
+    if query:
+        users = User.objects.filter(username__icontains=query).exclude(id=request.user.id)
+        context = {
+            'users': users,
+            'query': query
+        }
+        return render(request, 'a_rtchat/search_results.html', context)
+    return HttpResponse('')

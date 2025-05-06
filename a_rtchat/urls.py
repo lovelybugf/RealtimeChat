@@ -9,5 +9,6 @@ urlpatterns = [
     path('chat/manage_group/<chatroom_name>', manage_group, name="manage-group"),
     path('chat/file-upload/<chatroom_name>', chat_file_upload, name="chat-file-upload"),
     path('start-game/', start_Ransanmoi, name="start_game"),
-    path('start-xo/', start_XO, name="start_xo"),  
+    path('start-xo/', start_XO, name="start_xo"),
+    path('search-users/', search_users, name='search-users'),
 ]

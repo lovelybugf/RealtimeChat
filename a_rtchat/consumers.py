@@ -40,6 +40,16 @@ class ChatroomConsumer(WebsocketConsumer):
         async_to_sync(self.channel_layer.group_send)(
             self.chatroom_name, event
         )
+        chat_groups = self.user.chat_groups.annotate(
+            latest_message_time=Max('chat_messages__created')
+        ).order_by('-latest_message_time')
+        event1 = {
+            'type': 'contact_update',
+        }
+        # Broadcast contact update to all users in group
+        async_to_sync(self.channel_layer.group_send)(
+            self.chatroom_name, event1
+        )
         
     def message_handler(self, event):
         message_id = event['message_id']
@@ -61,17 +71,18 @@ class ChatroomConsumer(WebsocketConsumer):
         html = render_to_string("a_rtchat/partials/chat_message_p.html", context=context)
         self.send(text_data=html)
         
-        # Render contact list
-        html_contact = render_to_string("a_rtchat/partials/contact_p.html", 
-            context={
-                'chat_groups': chat_groups,
-                'user': self.user,
-                'now': now,
-                'yesterday': yesterday
-            })
+
+    def contact_update(self, event):
+        now = timezone.now()
+        yesterday = now - timedelta(days=1)
+        chat_groups = self.user.chat_groups.annotate(
+            latest_message_time=Max('chat_messages__created')
+        ).order_by('-latest_message_time')
+        context = {
+            'chat_groups': chat_groups,
+            'user': self.user,
+            'now': now,
+            'yesterday': yesterday
+        }
+        html_contact = render_to_string("a_rtchat/partials/contact_p.html", context=context)
         self.send(text_data=html_contact)
-        
-        # Render notification if the message is not from the current user
-        if message.author != self.user:
-            html_notification = render_to_string("a_rtchat/partials/notification_p.html", context=context)
-            self.send(text_data=html_notification)

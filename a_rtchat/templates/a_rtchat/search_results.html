@@ -1,0 +1,19 @@
+{% if users %}
+    <ul class="py-2">
+        {% for user in users %}
+        <li>
+            <a href="{% url 'profile' user.username %}" class="flex items-center px-4 py-2 hover:bg-gray-100">
+                <img src="{{ user.profile.avatar }}" alt="{{ user.profile.name }}" class="w-10 h-10 rounded-full">
+                <div class="ml-3">
+                    <p class="text-sm font-medium text-gray-900">{{ user.profile.name }}</p>
+                    <p class="text-xs text-gray-500">@{{ user.username }}</p>
+                </div>
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <div class="px-4 py-3 text-sm text-gray-500">
+        Không tìm thấy người dùng nào phù hợp
+    </div>
+{% endif %} 
