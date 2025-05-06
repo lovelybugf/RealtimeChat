@@ -128,17 +128,17 @@ def manage_group(request, chatroom_name):
             for member_id in remove_members:
                 member = User.objects.get(id=member_id)
                 chat_group.members.remove(member)
-                messages.success(request, f'Đã xóa thành viên {member.profile.name} khỏi nhóm chat.')
+                messages.success(request, f'Member {member.profile.name} has been removed from the chat group.')
                 
         if form1.is_valid():
             username = form1.cleaned_data['username']
             try:
                 user_to_add = User.objects.get(username=username)
                 chat_group.members.add(user_to_add)
-                messages.success(request, f'Đã thêm thành viên {user_to_add.profile.name} vào nhóm chat.')
+                messages.success(request, f'Member {user_to_add.profile.name} has been added to the chat group.')
             except User.DoesNotExist:
                 if username:
-                    messages.error(request, f'Không tìm thấy thành viên với tên người dùng: {username}')
+                    messages.error(request, f'User not found with username: {username}')
             return redirect('manage-group', chatroom_name) 
     
     context = {

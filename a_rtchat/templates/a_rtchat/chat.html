@@ -164,10 +164,10 @@
     <div id="left_sidebar" class="w-[280px] flex flex-col border-r border-gray-200">
         <!-- Search Bar -->
         <div class="p-4 border-b border-gray-200 relative">
-            <div class="relative">
+            <div class="relative flex items-center gap-2">
                 <input type="text" id="search_contacts" 
                     class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-                    placeholder="Tìm kiếm..."
+                    placeholder="Search..."
                     hx-get="{% url 'search-users' %}"
                     hx-trigger="keyup changed delay:500ms"
                     hx-target="#search_results"
@@ -177,6 +177,11 @@
                         <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
                     </svg>
                 </div>
+                <a href="{% url 'new-chatgroup' %}" class="p-2 text-gray-600 hover:text-blue-500 rounded-lg hover:bg-gray-100 transition-colors duration-200" title="Create Chat Group">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                </a>
             </div>
             <!-- Search Results Hoverlist -->
             <div id="search_results" class="absolute left-0 right-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 max-h-96 overflow-y-auto z-50 hidden">
